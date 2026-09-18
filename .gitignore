@@ -11,3 +11,6 @@ preview-vitrine.html
 .DS_Store
 Thumbs.db
 node_modules/
+
+# Cache das fotos do preview (recriável)
+.cache-preview/

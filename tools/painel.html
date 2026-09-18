@@ -322,7 +322,7 @@ async function carregar() {
   $('mattWord').value = c.afiliado.matt_word || '';
   $('mattTool').value = c.afiliado.matt_tool || '';
   $('chkAuto').checked = !!c.afiliado.montarLinkAutomatico;
-  $('termos').value = (c.busca.termos || []).join('\\n');
+  $('termos').value = (c.busca.termos || []).join('\n');
   $('cfgDesconto').checked = !!c.busca.soComDesconto;
   $('cfgFrete').checked = !!c.busca.soFreteGratis;
   $('chkDesconto').checked = !!c.busca.soComDesconto;
@@ -347,20 +347,20 @@ function desenharResultado(produtos) {
     return;
   }
 
-  alvo.innerHTML = produtos.map((p, i) => \`
-    <div class="item" data-i="\${i}">
-      <label class="marca"><input type="checkbox" class="chk-item" data-i="\${i}" checked></label>
-      \${p.discount ? \`<span class="selo">-\${p.discount}%</span>\` : (p.freeShipping ? '<span class="selo">frete grátis</span>' : '')}
-      <img src="\${p.image || ''}" alt="" loading="lazy" onerror="this.style.opacity=.2">
+  alvo.innerHTML = produtos.map((p, i) => `
+    <div class="item" data-i="${i}">
+      <label class="marca"><input type="checkbox" class="chk-item" data-i="${i}" checked></label>
+      ${p.discount ? `<span class="selo">-${p.discount}%</span>` : (p.freeShipping ? '<span class="selo">frete grátis</span>' : '')}
+      <img src="${p.image || ''}" alt="" loading="lazy" onerror="this.style.opacity=.2">
       <div class="corpo">
-        <div class="nome">\${(p.name || '').slice(0, 90)}</div>
+        <div class="nome">${(p.name || '').slice(0, 90)}</div>
         <div class="preco">
-          \${p.oldPrice ? \`<span class="antigo">\${moeda(p.oldPrice)}</span>\` : ''}\${moeda(p.price)}
+          ${p.oldPrice ? `<span class="antigo">${moeda(p.oldPrice)}</span>` : ''}${moeda(p.price)}
         </div>
-        <div class="eta">\${p.category || ''}\${p.sold ? ' · ' + p.sold : ''}</div>
+        <div class="eta">${p.category || ''}${p.sold ? ' · ' + p.sold : ''}</div>
       </div>
     </div>
-  \`).join('');
+  `).join('');
 
   alvo.querySelectorAll('.chk-item').forEach((chk) => {
     chk.addEventListener('change', () => {
@@ -433,7 +433,7 @@ $('btnAdicionar').addEventListener('click', async () => {
 
   try {
     const r = await api('/api/adicionar', { produtos: escolhidos });
-    let texto = \`✔ \${r.adicionados} produto(s) novo(s) e \${r.atualizados} atualizado(s). A vitrine tem \${r.total}.\`;
+    let texto = `✔ ${r.adicionados} produto(s) novo(s) e ${r.atualizados} atualizado(s). A vitrine tem ${r.total}.`;
     if (r.falhas && r.falhas.length) texto += ' (' + r.falhas.length + ' falharam)';
     avisar('msgDescobrir', texto, 'ok');
     if (r.falhas && r.falhas.length) console.warn('Falhas:', r.falhas);
@@ -490,7 +490,7 @@ $('btnImportar').addEventListener('click', async () => {
   if (!texto.trim()) return avisar('msgImport', 'Cole os links gerados no painel do Mercado Livre.', 'erro');
   try {
     const r = await api('/api/links/importar', { texto });
-    avisar('msgImport', \`✔ \${r.casados} link(s) de afiliado ligados aos produtos. A vitrine tem \${r.total}.\`, 'ok');
+    avisar('msgImport', `✔ ${r.casados} link(s) de afiliado ligados aos produtos. A vitrine tem ${r.total}.`, 'ok');
     $('textoLinks').value = '';
     await carregar();
   } catch (e) {
@@ -510,23 +510,23 @@ function desenharCatalogo() {
     return;
   }
 
-  alvo.innerHTML = \`
+  alvo.innerHTML = `
     <table>
       <thead><tr><th></th><th>Produto</th><th>Categoria</th><th>Preço</th><th>Loja</th><th></th></tr></thead>
       <tbody>
-        \${ps.map((p) => \`
+        ${ps.map((p) => `
           <tr>
-            <td><img src="\${p.image || ''}" alt="" onerror="this.style.opacity=.2"></td>
-            <td>\${(p.name || '').slice(0, 70)}</td>
-            <td>\${p.category || ''}</td>
-            <td>\${moeda(p.price)}\${p.oldPrice ? \` <span class="antigo" style="text-decoration:line-through;color:#9a7a88;font-size:.8em">\${moeda(p.oldPrice)}</span>\` : ''}</td>
-            <td><a href="\${p.link}" target="_blank" rel="noopener" style="color:var(--rosa)">\${p.store || 'ML'}</a></td>
-            <td><button class="secundario" style="padding:.3rem .6rem;font-size:.78rem" data-remover="\${p.id || p.name}">remover</button></td>
+            <td><img src="${p.image || ''}" alt="" onerror="this.style.opacity=.2"></td>
+            <td>${(p.name || '').slice(0, 70)}</td>
+            <td>${p.category || ''}</td>
+            <td>${moeda(p.price)}${p.oldPrice ? ` <span class="antigo" style="text-decoration:line-through;color:#9a7a88;font-size:.8em">${moeda(p.oldPrice)}</span>` : ''}</td>
+            <td><a href="${p.link}" target="_blank" rel="noopener" style="color:var(--rosa)">${p.store || 'ML'}</a></td>
+            <td><button class="secundario" style="padding:.3rem .6rem;font-size:.78rem" data-remover="${p.id || p.name}">remover</button></td>
           </tr>
-        \`).join('')}
+        `).join('')}
       </tbody>
     </table>
-  \`;
+  `;
 
   alvo.querySelectorAll('[data-remover]').forEach((b) => {
     b.addEventListener('click', async () => {
@@ -565,7 +565,7 @@ $('btnSalvarConfig').addEventListener('click', async () => {
   };
   cfg.busca = {
     ...cfg.busca,
-    termos: $('termos').value.split('\\n').map((l) => l.trim()).filter(Boolean),
+    termos: $('termos').value.split('\n').map((l) => l.trim()).filter(Boolean),
     soComDesconto: $('cfgDesconto').checked,
     soFreteGratis: $('cfgFrete').checked,
   };
