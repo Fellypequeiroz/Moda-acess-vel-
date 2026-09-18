@@ -3,9 +3,8 @@ links-para-painel.txt
 links-para-painel.json
 candidatos.json
 
-# Arquivo de pré-visualização (gerado por tools/gerar-preview.js)
-# É grande e é descartável: recrie com o comando quando quiser.
-preview-vitrine.html
+# preview-vitrine.html é versionado de propósito: é o arquivo que você baixa
+# para ver a vitrine sem servidor. Recrie com: node tools/gerar-preview.js
 
 # Sistema
 .DS_Store
