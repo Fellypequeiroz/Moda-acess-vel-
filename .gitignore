@@ -1,0 +1,9 @@
+# Arquivos temporários da ferramenta (não precisam ir para o site)
+links-para-painel.txt
+links-para-painel.json
+candidatos.json
+
+# Sistema
+.DS_Store
+Thumbs.db
+node_modules/

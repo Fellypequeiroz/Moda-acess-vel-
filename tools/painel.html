@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel da Vitrine — Mercado Livre</title>
+<style>
+  :root {
+    --rosa: #d4738a;
+    --rosa-claro: #fce4ec;
+    --texto: #4a3a42;
+    --suave: #9a7a88;
+    --borda: rgba(212,115,138,.3);
+    --fundo: #fffafb;
+    --card: #fff;
+    --ok: #2e7d52;
+    --erro: #c0392b;
+    --amarelo: #ffe600;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--fundo); color: var(--texto); line-height:1.5;
+    padding-bottom: 4rem;
+  }
+  header {
+    background:#fff; border-bottom:1px solid var(--borda);
+    padding:1rem 1.5rem; position:sticky; top:0; z-index:50;
+  }
+  .header-in { max-width:1180px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; }
+  h1 { font-size:1.15rem; font-weight:600; }
+  h1 span { color:var(--rosa); }
+  .pill { background:var(--rosa-claro); color:var(--rosa); padding:.2rem .6rem; border-radius:99px; font-size:.75rem; font-weight:600; }
+  main { max-width:1180px; margin:0 auto; padding:1.5rem; }
+
+  .tabs { display:flex; gap:.4rem; margin-bottom:1.5rem; flex-wrap:wrap; }
+  .tab {
+    padding:.55rem 1rem; border:1px solid var(--borda); background:#fff; border-radius:8px;
+    cursor:pointer; font-size:.85rem; color:var(--suave); font-weight:500;
+  }
+  .tab.ativo { background:var(--rosa); color:#fff; border-color:var(--rosa); }
+
+  .painel { display:none; }
+  .painel.ativo { display:block; }
+
+  .card { background:var(--card); border:1px solid var(--borda); border-radius:12px; padding:1.25rem; margin-bottom:1.25rem; }
+  .card h2 { font-size:1rem; margin-bottom:.3rem; }
+  .card p.ajuda { color:var(--suave); font-size:.83rem; margin-bottom:.9rem; }
+
+  label { display:block; font-size:.78rem; font-weight:600; color:var(--suave); margin-bottom:.3rem; text-transform:uppercase; letter-spacing:.04em; }
+  input[type=text], input[type=password], textarea, select {
+    width:100%; padding:.65rem .8rem; border:1px solid var(--borda); border-radius:8px;
+    font-size:.9rem; font-family:inherit; color:var(--texto); background:#fff;
+  }
+  textarea { resize:vertical; min-height:120px; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:.82rem; }
+  .linha { display:flex; gap:.7rem; flex-wrap:wrap; align-items:flex-end; }
+  .linha > * { flex:1; min-width:150px; }
+  .linha > .estreito { flex:0 0 130px; min-width:110px; }
+
+  button {
+    padding:.65rem 1.1rem; border-radius:8px; border:1px solid var(--rosa);
+    background:var(--rosa); color:#fff; font-size:.88rem; font-weight:600;
+    cursor:pointer; font-family:inherit; white-space:nowrap;
+  }
+  button:hover { filter:brightness(1.06); }
+  button.secundario { background:#fff; color:var(--rosa); }
+  button:disabled { opacity:.5; cursor:not-allowed; }
+
+  .checks { display:flex; gap:1.2rem; flex-wrap:wrap; margin:.9rem 0; font-size:.85rem; }
+  .checks label { display:flex; align-items:center; gap:.4rem; text-transform:none; letter-spacing:0; font-weight:400; color:var(--texto); font-size:.85rem; margin:0; }
+  .checks input { width:auto; }
+
+  .msg { padding:.75rem 1rem; border-radius:8px; font-size:.86rem; margin:1rem 0; display:none; }
+  .msg.ok    { display:block; background:#e8f5ee; color:var(--ok); border:1px solid #b6e0c8; }
+  .msg.erro  { display:block; background:#fdeaea; color:var(--erro); border:1px solid #f5c2c2; }
+  .msg.info  { display:block; background:#fff8e1; color:#8a6d1f; border:1px solid #ffe08a; }
+
+  .grade { display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:.9rem; margin-top:1rem; }
+  .item {
+    border:1px solid var(--borda); border-radius:10px; overflow:hidden; background:#fff;
+    display:flex; flex-direction:column; position:relative;
+  }
+  .item.selecionado { border-color:var(--rosa); box-shadow:0 0 0 2px var(--rosa-claro); }
+  .item img { width:100%; aspect-ratio:1; object-fit:contain; background:#fafafa; display:block; }
+  .item .corpo { padding:.6rem; flex:1; display:flex; flex-direction:column; gap:.3rem; }
+  .item .nome { font-size:.8rem; line-height:1.3; flex:1; }
+  .item .preco { font-size:.95rem; font-weight:700; color:var(--rosa); }
+  .item .antigo { font-size:.75rem; color:var(--suave); text-decoration:line-through; margin-right:.35rem; }
+  .item .eta { font-size:.7rem; color:var(--suave); }
+  .item .marca {
+    position:absolute; top:.45rem; left:.45rem; background:#fff; border:1px solid var(--borda);
+    border-radius:6px; width:24px; height:24px; display:flex; align-items:center; justify-content:center; cursor:pointer;
+  }
+  .item .marca input { width:auto; margin:0; }
+  .item .selo {
+    position:absolute; top:.45rem; right:.45rem; background:var(--rosa); color:#fff;
+    font-size:.68rem; font-weight:700; padding:.15rem .4rem; border-radius:5px;
+  }
+
+  table { width:100%; border-collapse:collapse; font-size:.85rem; }
+  th { text-align:left; font-size:.72rem; text-transform:uppercase; letter-spacing:.05em; color:var(--suave); padding:.5rem; border-bottom:1px solid var(--borda); }
+  td { padding:.55rem .5rem; border-bottom:1px solid #f5edf0; vertical-align:middle; }
+  td img { width:38px; height:38px; object-fit:contain; border-radius:6px; background:#fafafa; }
+  .vazio { color:var(--suave); font-size:.88rem; padding:1.5rem 0; text-align:center; }
+
+  code { background:#f7eef1; padding:.1rem .35rem; border-radius:4px; font-size:.82em; }
+  summary { cursor:pointer; font-weight:600; font-size:.85rem; }
+  .bloco-codigo { background:#2d2a2b; color:#f5eef0; padding:.9rem; border-radius:8px; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:.8rem; overflow-x:auto; white-space:pre; margin-top:.6rem; }
+  .descricao-passo { font-size:.86rem; color:var(--texto); }
+  ol { margin:.6rem 0 .8rem 1.3rem; font-size:.86rem; }
+  ol li { margin-bottom:.35rem; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-in">
+    <h1>Painel da Vitrine <span>Mercado Livre</span></h1>
+    <div style="display:flex; gap:.6rem; align-items:center;">
+      <span class="pill" id="contador">… produtos</span>
+      <a href="/" target="_blank" style="font-size:.82rem; color:var(--rosa);">ver a vitrine →</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div id="msgTopo" class="msg"></div>
+
+  <div class="tabs">
+    <button class="tab ativo" data-painel="descobrir">1. Descobrir produtos</button>
+    <button class="tab" data-painel="links">2. Links de afiliado</button>
+    <button class="tab" data-painel="catalogo">3. Catálogo</button>
+    <button class="tab" data-painel="config">Configurações</button>
+  </div>
+
+  <!-- ============ DESCOBRIR ============ -->
+  <section class="painel ativo" id="p-descobrir">
+    <div class="card">
+      <h2>Buscar produtos no Mercado Livre</h2>
+      <p class="ajuda">A ferramenta lê as páginas públicas do Mercado Livre e já traz nome, preço, preço antigo e foto. Você só escolhe o que vai pra vitrine.</p>
+
+      <div class="linha">
+        <div>
+          <label for="termo">O que você quer vender</label>
+          <input type="text" id="termo" placeholder="ex: vestido midi feminino">
+        </div>
+        <div class="estreito">
+          <label for="limite">Quantos</label>
+          <select id="limite">
+            <option>12</option><option selected>24</option><option>40</option><option>60</option>
+          </select>
+        </div>
+        <div style="flex:0 0 auto;">
+          <button id="btnBuscar">Buscar</button>
+        </div>
+      </div>
+
+      <div class="checks">
+        <label><input type="checkbox" id="chkDesconto" checked> Só com desconto</label>
+        <label><input type="checkbox" id="chkFrete" checked> Só com frete grátis</label>
+        <button class="secundario" id="btnVirais" style="margin-left:auto;">🔥 Mais vendidos do ML</button>
+        <button class="secundario" id="btnTermos">⚡ Usar meus termos salvos</button>
+      </div>
+
+      <div id="msgDescobrir" class="msg"></div>
+      <div id="resultado" class="grade"></div>
+
+      <div id="acoesResultado" style="display:none; margin-top:1.2rem; gap:.6rem; align-items:center;">
+        <button id="btnAdicionar">Adicionar selecionados à vitrine</button>
+        <button class="secundario" id="btnMarcarTodos">Marcar todos</button>
+        <span id="contadorSelecionados" style="font-size:.83rem; color:var(--suave);"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ LINKS ============ -->
+  <section class="painel" id="p-links">
+    <div class="card">
+      <h2>Como o link de afiliado entra na vitrine</h2>
+      <p class="ajuda">O Mercado Livre <strong>não tem API oficial de afiliado</strong> — não existe um jeito oficial de o site gerar o link sozinho. Então aqui vão os dois caminhos que funcionam.</p>
+
+      <details open style="border:1px solid var(--borda); border-radius:10px; padding:1rem; margin-bottom:.9rem;">
+        <summary>✅ Caminho A — em lote pelo painel do ML (recomendado, 100% dentro das regras)</summary>
+        <div class="descricao-passo" style="margin-top:.8rem;">
+          <ol>
+            <li>Clique em <strong>Exportar lista</strong> abaixo e copie o texto.</li>
+            <li>Abra <a href="https://afiliados.mercadolivre.com.br/" target="_blank">afiliados.mercadolivre.com.br</a> → <strong>Ferramentas → Gerador de links</strong>.</li>
+            <li>Cole <strong>todas as URLs de uma vez</strong> (o gerador aceita várias linhas), escolha a etiqueta e clique em Gerar.</li>
+            <li>Copie os links gerados (<code>mercadolivre.com/sec/…</code>) e cole no campo de importar.</li>
+          </ol>
+          <p class="ajuda">A importação casa os links pela <strong>ordem</strong>, então exporte e importe sem mexer na lista.</p>
+        </div>
+        <div style="display:flex; gap:.6rem; flex-wrap:wrap; margin-top:.7rem;">
+          <button id="btnExportar">Exportar lista de URLs</button>
+          <button class="secundario" id="btnCopiarUrls">Copiar</button>
+        </div>
+        <textarea id="textoUrls" style="margin-top:.9rem;" placeholder="As URLs dos seus produtos aparecem aqui…"></textarea>
+      </details>
+
+      <details style="border:1px solid var(--borda); border-radius:10px; padding:1rem; margin-bottom:.9rem;">
+        <summary>⚙️ Caminho B — a ferramenta monta o link sozinha (<em>matt_word</em> + <em>matt_tool</em>)</summary>
+        <div class="descricao-passo" style="margin-top:.8rem;">
+          <p>Todo link do programa de afiliados carrega seus parâmetros <code>matt_word</code> e <code>matt_tool</code>. Se você ensinar os seus para a ferramenta, ela monta os próximos links sozinha, sem abrir o painel.</p>
+          <p style="margin-top:.6rem;"><strong>Como ensinar:</strong> gere <strong>um</strong> link no painel do ML, cole no campo abaixo e clique em Aprender.</p>
+          <p class="ajuda" style="margin-top:.6rem;">⚠️ Isto usa um formato não documentado pelo ML. Funciona, mas confirme com uma venda de teste antes de depender só dele. O Caminho A é o garantido.</p>
+        </div>
+        <div class="linha" style="margin-top:.8rem;">
+          <input type="text" id="linkExemplo" placeholder="https://mercadolivre.com/sec/1a2b3c4d">
+          <div style="flex:0 0 auto;"><button id="btnAprender">Aprender</button></div>
+        </div>
+        <div id="msgsLink" class="msg"></div>
+      </details>
+
+      <details style="border:1px solid var(--borda); border-radius:10px; padding:1rem;">
+        <summary>📥 Importar os links gerados</summary>
+        <div style="margin-top:.8rem;">
+          <label for="textoLinks">Cole aqui os links do painel, um por linha, na mesma ordem da exportação</label>
+          <textarea id="textoLinks" placeholder="https://mercadolivre.com/sec/…&#10;https://mercadolivre.com/sec/…"></textarea>
+          <div style="margin-top:.7rem;"><button id="btnImportar">Importar links</button></div>
+          <div id="msgImport" class="msg"></div>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ============ CATÁLOGO ============ -->
+  <section class="painel" id="p-catalogo">
+    <div class="card">
+      <h2>Produtos na vitrine</h2>
+      <p class="ajuda">É exatamente o que aparece no site agora.</p>
+      <div id="tabelaCatalogo"></div>
+      <div style="margin-top:1rem;"><button class="secundario" id="btnRegerar">Recriar arquivos da vitrine</button></div>
+    </div>
+  </section>
+
+  <!-- ============ CONFIG ============ -->
+  <section class="painel" id="p-config">
+    <div class="card">
+      <h2>Atribuição de afiliado</h2>
+      <p class="ajuda">Preenchido automaticamente quando você usa o botão Aprender. Também pode digitar à mão.</p>
+      <div class="linha">
+        <div><label for="mattWord">matt_word</label><input type="text" id="mattWord" placeholder="seu usuário de afiliado"></div>
+        <div><label for="mattTool">matt_tool</label><input type="text" id="mattTool" placeholder="número da ferramenta"></div>
+      </div>
+      <div class="checks">
+        <label><input type="checkbox" id="chkAuto"> Montar os links automaticamente com estes parâmetros</label>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Termos de busca salvos</h2>
+      <p class="ajuda">Usados pelo botão "Usar meus termos salvos" e pelo comando <code>node tools/descobrir.js termo</code>. Um por linha.</p>
+      <textarea id="termos" style="min-height:140px;"></textarea>
+      <div class="checks" style="margin-top:.8rem;">
+        <label><input type="checkbox" id="cfgDesconto"> Só com desconto na descoberta automática</label>
+        <label><input type="checkbox" id="cfgFrete"> Só com frete grátis na descoberta automática</label>
+      </div>
+    </div>
+
+    <button id="btnSalvarConfig">Salvar configurações</button>
+    <div id="msgConfig" class="msg"></div>
+  </section>
+</main>
+
+<script>
+/* ------------------------------------------------------------------ */
+/* utilidades                                                          */
+/* ------------------------------------------------------------------ */
+const $ = (id) => document.getElementById(id);
+const moeda = (v) => v == null ? '' : Number(v).toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
+
+function avisar(id, texto, tipo = 'ok') {
+  const el = $(id);
+  el.className = 'msg ' + tipo;
+  el.textContent = texto;
+  if (tipo === 'ok') setTimeout(() => { el.className = 'msg'; }, 6000);
+}
+
+async function api(rota, corpo) {
+  const r = await fetch(rota, {
+    method: corpo === undefined ? 'GET' : 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: corpo === undefined ? undefined : JSON.stringify(corpo),
+  });
+  const dados = await r.json().catch(() => ({ erro: 'resposta inválida do servidor' }));
+  if (!r.ok && dados.erro) throw new Error(dados.erro);
+  return dados;
+}
+
+let ESTADO = { produtos: [], config: null };
+
+/* ------------------------------------------------------------------ */
+/* abas                                                                */
+/* ------------------------------------------------------------------ */
+document.querySelectorAll('.tab').forEach((t) => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach((x) => x.classList.remove('ativo'));
+    document.querySelectorAll('.painel').forEach((x) => x.classList.remove('ativo'));
+    t.classList.add('ativo');
+    $('p-' + t.dataset.painel).classList.add('ativo');
+  });
+});
+
+/* ------------------------------------------------------------------ */
+/* carregar estado                                                     */
+/* ------------------------------------------------------------------ */
+async function carregar() {
+  try {
+    ESTADO = await api('/api/estado');
+  } catch (e) {
+    avisar('msgTopo', 'Não consegui falar com o servidor: ' + e.message, 'erro');
+    return;
+  }
+
+  $('contador').textContent = ESTADO.total + (ESTADO.total === 1 ? ' produto' : ' produtos');
+
+  if (ESTADO.demo) {
+    avisar('msgTopo', 'MODO DEMONSTRAÇÃO: os produtos exibidos são de exemplo. Rode sem --demo para valer.', 'info');
+  }
+
+  const c = ESTADO.config;
+  $('mattWord').value = c.afiliado.matt_word || '';
+  $('mattTool').value = c.afiliado.matt_tool || '';
+  $('chkAuto').checked = !!c.afiliado.montarLinkAutomatico;
+  $('termos').value = (c.busca.termos || []).join('\\n');
+  $('cfgDesconto').checked = !!c.busca.soComDesconto;
+  $('cfgFrete').checked = !!c.busca.soFreteGratis;
+  $('chkDesconto').checked = !!c.busca.soComDesconto;
+  $('chkFrete').checked = !!c.busca.soFreteGratis;
+
+  desenharCatalogo();
+}
+
+/* ------------------------------------------------------------------ */
+/* descobrir                                                           */
+/* ------------------------------------------------------------------ */
+let ULTIMO_RESULTADO = [];
+
+function desenharResultado(produtos) {
+  ULTIMO_RESULTADO = produtos;
+  const alvo = $('resultado');
+
+  if (!produtos.length) {
+    alvo.innerHTML = '';
+    avisar('msgDescobrir', 'Não achei produtos com esses filtros. Tente tirar o "só com desconto".', 'info');
+    $('acoesResultado').style.display = 'none';
+    return;
+  }
+
+  alvo.innerHTML = produtos.map((p, i) => \`
+    <div class="item" data-i="\${i}">
+      <label class="marca"><input type="checkbox" class="chk-item" data-i="\${i}" checked></label>
+      \${p.discount ? \`<span class="selo">-\${p.discount}%</span>\` : (p.freeShipping ? '<span class="selo">frete grátis</span>' : '')}
+      <img src="\${p.image || ''}" alt="" loading="lazy" onerror="this.style.opacity=.2">
+      <div class="corpo">
+        <div class="nome">\${(p.name || '').slice(0, 90)}</div>
+        <div class="preco">
+          \${p.oldPrice ? \`<span class="antigo">\${moeda(p.oldPrice)}</span>\` : ''}\${moeda(p.price)}
+        </div>
+        <div class="eta">\${p.category || ''}\${p.sold ? ' · ' + p.sold : ''}</div>
+      </div>
+    </div>
+  \`).join('');
+
+  alvo.querySelectorAll('.chk-item').forEach((chk) => {
+    chk.addEventListener('change', () => {
+      chk.closest('.item').classList.toggle('selecionado', chk.checked);
+      atualizarSelecionados();
+    });
+  });
+  alvo.querySelectorAll('.item').forEach((el) => el.classList.add('selecionado'));
+
+  $('acoesResultado').style.display = 'flex';
+  atualizarSelecionados();
+  avisar('msgDescobrir', produtos.length + ' produto(s) encontrados. Desmarque o que não quiser e clique em Adicionar.', 'ok');
+}
+
+function selecionados() {
+  return [...document.querySelectorAll('.chk-item')].filter((c) => c.checked).map((c) => ULTIMO_RESULTADO[+c.dataset.i]);
+}
+
+function atualizarSelecionados() {
+  const n = selecionados().length;
+  $('contadorSelecionados').textContent = n + ' selecionado(s)';
+}
+
+async function descobrir(corpo) {
+  $('resultado').innerHTML = '<div class="vazio">Buscando no Mercado Livre… isso pode levar alguns segundos.</div>';
+  $('acoesResultado').style.display = 'none';
+  $('msgDescobrir').className = 'msg';
+
+  try {
+    const r = await api('/api/descobrir', corpo);
+    desenharResultado(r.produtos || []);
+    if (r.aviso) avisar('msgDescobrir', r.aviso, 'info');
+  } catch (e) {
+    $('resultado').innerHTML = '';
+    avisar('msgDescobrir', 'Não deu certo: ' + e.message + ' — tente novamente; o Mercado Livre às vezes bloqueia buscas seguidas.', 'erro');
+  }
+}
+
+$('btnBuscar').addEventListener('click', () => {
+  const termo = $('termo').value.trim();
+  if (!termo) return avisar('msgDescobrir', 'Digite o que você quer buscar.', 'erro');
+  descobrir({ tipo: 'buscar', termo, limite: +$('limite').value, soDesconto: $('chkDesconto').checked, soFreteGratis: $('chkFrete').checked });
+});
+
+$('termo').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('btnBuscar').click(); });
+
+$('btnVirais').addEventListener('click', () => {
+  descobrir({ tipo: 'virais', limite: +$('limite').value });
+});
+
+$('btnTermos').addEventListener('click', () => {
+  descobrir({ tipo: 'termos', limite: 60 });
+});
+
+$('btnMarcarTodos').addEventListener('click', () => {
+  const todos = document.querySelectorAll('.chk-item');
+  const marcar = [...todos].some((c) => !c.checked);
+  todos.forEach((c) => { c.checked = marcar; c.closest('.item').classList.toggle('selecionado', marcar); });
+  atualizarSelecionados();
+});
+
+$('btnAdicionar').addEventListener('click', async () => {
+  const escolhidos = selecionados();
+  if (!escolhidos.length) return avisar('msgDescobrir', 'Selecione pelo menos um produto.', 'erro');
+
+  const botao = $('btnAdicionar');
+  botao.disabled = true;
+  botao.textContent = 'Cadastrando…';
+  avisar('msgDescobrir', 'Lendo a página de cada produto para confirmar preço e foto. Aguarde…', 'info');
+
+  try {
+    const r = await api('/api/adicionar', { produtos: escolhidos });
+    let texto = \`✔ \${r.adicionados} produto(s) novo(s) e \${r.atualizados} atualizado(s). A vitrine tem \${r.total}.\`;
+    if (r.falhas && r.falhas.length) texto += ' (' + r.falhas.length + ' falharam)';
+    avisar('msgDescobrir', texto, 'ok');
+    if (r.falhas && r.falhas.length) console.warn('Falhas:', r.falhas);
+    await carregar();
+  } catch (e) {
+    avisar('msgDescobrir', 'Erro ao cadastrar: ' + e.message, 'erro');
+  } finally {
+    botao.disabled = false;
+    botao.textContent = 'Adicionar selecionados à vitrine';
+  }
+});
+
+/* ------------------------------------------------------------------ */
+/* links de afiliado                                                   */
+/* ------------------------------------------------------------------ */
+$('btnExportar').addEventListener('click', async () => {
+  try {
+    const r = await api('/api/links/exportar', {});
+    $('textoUrls').value = r.texto;
+    avisar('msgsLink', r.quantidade + ' URL(s) prontas. Arquivo salvo em ' + r.arquivo + '.', 'ok');
+  } catch (e) {
+    avisar('msgsLink', 'Erro: ' + e.message, 'erro');
+  }
+});
+
+$('btnCopiarUrls').addEventListener('click', async () => {
+  const t = $('textoUrls');
+  if (!t.value.trim()) return avisar('msgsLink', 'Clique em "Exportar lista de URLs" primeiro.', 'erro');
+  t.select();
+  try { await navigator.clipboard.writeText(t.value); } catch { document.execCommand('copy'); }
+  avisar('msgsLink', 'Lista copiada. Cole no gerador de links do Mercado Livre.', 'ok');
+});
+
+$('btnAprender').addEventListener('click', async () => {
+  const link = $('linkExemplo').value.trim();
+  if (!link) return avisar('msgsLink', 'Cole um link de afiliado gerado no painel.', 'erro');
+  avisar('msgsLink', 'Consultando o Mercado Livre…', 'info');
+  try {
+    const r = await api('/api/detalhe', { url: link });
+    const p = r.parametros || {};
+    if (!p.matt_word) throw new Error('não achei parâmetros de afiliado nesse link');
+    const cfg = ESTADO.config;
+    cfg.afiliado = { ...cfg.afiliado, ...p, montarLinkAutomatico: true };
+    await api('/api/config', cfg);
+    await carregar();
+    avisar('msgsLink', 'Aprendido: ' + Object.entries(p).map(([k, v]) => k + '=' + v).join(', ') + '. Agora a ferramenta monta os links sozinha.', 'ok');
+  } catch (e) {
+    avisar('msgsLink', 'Não deu: ' + e.message + '. Use o Caminho A (em lote), que sempre funciona.', 'erro');
+  }
+});
+
+$('btnImportar').addEventListener('click', async () => {
+  const texto = $('textoLinks').value;
+  if (!texto.trim()) return avisar('msgImport', 'Cole os links gerados no painel do Mercado Livre.', 'erro');
+  try {
+    const r = await api('/api/links/importar', { texto });
+    avisar('msgImport', \`✔ \${r.casados} link(s) de afiliado ligados aos produtos. A vitrine tem \${r.total}.\`, 'ok');
+    $('textoLinks').value = '';
+    await carregar();
+  } catch (e) {
+    avisar('msgImport', e.message, 'erro');
+  }
+});
+
+/* ------------------------------------------------------------------ */
+/* catálogo                                                            */
+/* ------------------------------------------------------------------ */
+function desenharCatalogo() {
+  const alvo = $('tabelaCatalogo');
+  const ps = ESTADO.produtos || [];
+
+  if (!ps.length) {
+    alvo.innerHTML = '<div class="vazio">Nenhum produto ainda. Vá em "1. Descobrir produtos".</div>';
+    return;
+  }
+
+  alvo.innerHTML = \`
+    <table>
+      <thead><tr><th></th><th>Produto</th><th>Categoria</th><th>Preço</th><th>Loja</th><th></th></tr></thead>
+      <tbody>
+        \${ps.map((p) => \`
+          <tr>
+            <td><img src="\${p.image || ''}" alt="" onerror="this.style.opacity=.2"></td>
+            <td>\${(p.name || '').slice(0, 70)}</td>
+            <td>\${p.category || ''}</td>
+            <td>\${moeda(p.price)}\${p.oldPrice ? \` <span class="antigo" style="text-decoration:line-through;color:#9a7a88;font-size:.8em">\${moeda(p.oldPrice)}</span>\` : ''}</td>
+            <td><a href="\${p.link}" target="_blank" rel="noopener" style="color:var(--rosa)">\${p.store || 'ML'}</a></td>
+            <td><button class="secundario" style="padding:.3rem .6rem;font-size:.78rem" data-remover="\${p.id || p.name}">remover</button></td>
+          </tr>
+        \`).join('')}
+      </tbody>
+    </table>
+  \`;
+
+  alvo.querySelectorAll('[data-remover]').forEach((b) => {
+    b.addEventListener('click', async () => {
+      if (!confirm('Remover este produto da vitrine?')) return;
+      try {
+        await api('/api/remover', { id: b.dataset.remover });
+        await carregar();
+        avisar('msgTopo', 'Produto removido.', 'ok');
+      } catch (e) {
+        avisar('msgTopo', 'Erro: ' + e.message, 'erro');
+      }
+    });
+  });
+}
+
+$('btnRegerar').addEventListener('click', async () => {
+  try {
+    const r = await api('/api/regerar', {});
+    avisar('msgTopo', 'Arquivos recriados: ' + r.total + ' produtos.', 'ok');
+    await carregar();
+  } catch (e) {
+    avisar('msgTopo', 'Erro: ' + e.message, 'erro');
+  }
+});
+
+/* ------------------------------------------------------------------ */
+/* config                                                              */
+/* ------------------------------------------------------------------ */
+$('btnSalvarConfig').addEventListener('click', async () => {
+  const cfg = ESTADO.config;
+  cfg.afiliado = {
+    ...cfg.afiliado,
+    matt_word: $('mattWord').value.trim(),
+    matt_tool: $('mattTool').value.trim(),
+    montarLinkAutomatico: $('chkAuto').checked,
+  };
+  cfg.busca = {
+    ...cfg.busca,
+    termos: $('termos').value.split('\\n').map((l) => l.trim()).filter(Boolean),
+    soComDesconto: $('cfgDesconto').checked,
+    soFreteGratis: $('cfgFrete').checked,
+  };
+  try {
+    await api('/api/config', cfg);
+    await carregar();
+    avisar('msgConfig', 'Configurações salvas.', 'ok');
+  } catch (e) {
+    avisar('msgConfig', 'Erro: ' + e.message, 'erro');
+  }
+});
+
+/* ------------------------------------------------------------------ */
+carregar();
+</script>
+</body>
+</html>

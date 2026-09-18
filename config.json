@@ -1,0 +1,108 @@
+{
+  "afiliado": {
+    "matt_word": "",
+    "matt_tool": "",
+    "montarLinkAutomatico": false
+  },
+  "categorias": [
+    {
+      "id": "vestidos",
+      "nome": "Vestidos",
+      "palavras": [
+        "vestido",
+        "midi",
+        "chemise",
+        "saia vestido"
+      ]
+    },
+    {
+      "id": "blusas",
+      "nome": "Blusas & Tops",
+      "palavras": [
+        "blusa",
+        "camisa",
+        "camiseta",
+        "t-shirt",
+        "top",
+        "cropped",
+        "body",
+        "regata",
+        "jaqueta",
+        "casaco",
+        "cardigan",
+        "moletom",
+        "colete",
+        "polo"
+      ]
+    },
+    {
+      "id": "calcas",
+      "nome": "Calças",
+      "palavras": [
+        "calca",
+        "calça",
+        "jeans",
+        "shorts",
+        "bermuda",
+        "legging",
+        "saia",
+        "macacao",
+        "macacão",
+        "conjunto"
+      ]
+    },
+    {
+      "id": "acessorios",
+      "nome": "Acessórios",
+      "palavras": [
+        "bolsa",
+        "mochila",
+        "carteira",
+        "cinto",
+        "brinco",
+        "colar",
+        "anel",
+        "pulseira",
+        "oculos",
+        "óculos",
+        "relogio",
+        "relógio",
+        "chapeu",
+        "chapéu",
+        "bone",
+        "boné",
+        "lenco",
+        "lenço",
+        "sandalia",
+        "sandália",
+        "tenis",
+        "tênis",
+        "sapato",
+        "bota",
+        "meia",
+        "gorro",
+        "kit"
+      ]
+    }
+  ],
+  "busca": {
+    "termos": [
+      "vestido feminino",
+      "blusa feminina",
+      "calça jeans feminina",
+      "bolsa feminina",
+      "conjunto feminino",
+      "sandália feminina"
+    ],
+    "limitePorTermo": 12,
+    "soComDesconto": true,
+    "soFreteGratis": true
+  },
+  "site": {
+    "botaoLoja": "Ver no Mercado Livre",
+    "selos": {
+      "freteGratis": "Frete grátis",
+      "maisVendido": "Mais vendido"
+    }
+  }
+}
